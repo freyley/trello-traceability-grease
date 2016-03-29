@@ -1,1 +1,1 @@
-# trello-traceability-grease
+# trello-traceability-greaseGreaseMonkey/TamperMonkey script to provide the ability to link cards together in Trello. To use, install Trello_Traceability.js into GreaseMonkey or TamperMonkey
