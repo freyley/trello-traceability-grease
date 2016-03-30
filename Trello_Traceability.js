@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Trello Traceability
-// @namespace    http://tampermonkey.net/
-// @version      1.0
+// @namespace    trellotraceability
+// @version      1.0.1
 // @description  Link and unlink cards between boards in Trello
 // @author       Jeff Schwaber
 // @match        https://trello.com/*
