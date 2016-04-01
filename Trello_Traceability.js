@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Trello Traceability
 // @namespace    trellotraceability
-// @version      1.0.1
+// @version      2.0
 // @description  Link and unlink cards between boards in Trello
 // @author       Jeff Schwaber
 // @match        https://trello.com/*
@@ -120,7 +120,29 @@ var get_or_create_card_in_checklist = function(card_id, checklist_id) {
     });
     return deferred;
 };
+
+var refresh_checkitems = function(card_id, checklist_id) {
+    $.get('https://trello.com/1/checklists/'+checklist_id+'/checkItems').done(function(checkitems) {
+        for (var i=0; i<checkitems.length; i++) {
+            var checkitem = checkitems[i];
+            $.get('https://trello.com/1/cards/'+card_id+'?fields=shortUrl,list&list=true').done(function(card_data) {
+                var list_name = card_data.list.name;
+                var card_url = card_data.shortUrl;
+                var new_name = card_url + ' [' + list_name +']';
+                console.log(list_name, card_url, new_name);
+                $.ajax(
+                    'https://trello.com/1/cards/'+card_id+'/checklist/'+checklist_id+'/checkItem/'+checkitem.id, 
+                    { type: 'PUT', data: {'name': new_name, 'token': Cookies.get('token')}}
+                ).done(function() {});
+            });
+        }
+    });
+};
+        
     
+
+  
+
 var CURRENTLY_SELECTED_BOARD = null;
 var CURRENTLY_SELECTED_LIST = null;
 var CURRENTLY_SELECTED_CARD = null;
@@ -252,11 +274,25 @@ var add_link_button_to_card_back = function() {
         return false;
     });    
 };
+var add_refresh_to_card_back = function() {
+    $('.window-module-title-options').prepend('<a class="js-tt-refresh" href="#">Refresh</a> ');
+    $('.js-tt-refresh').click(function() {
+       var card_id = get_card_id();
+       get_long_card_id_for_short(card_id).done(function(long_card_id) {    
+            get_or_create_links_checklist_for_card(long_card_id).done(function(checklist_id) {
+                refresh_checkitems(long_card_id, checklist_id);
+            });
+       });
+       return false;
+    });
+};
+
 $(function() {
     // TODO: ideally, run this initially only if the url is trello.com/c/...
     add_link_dialog_to_page();
     add_link_button_to_card_back();
     $('.list-card-details').on('click', function(e){
         window.setTimeout(add_link_button_to_card_back, 1);
+        window.setTimeout(add_refresh_to_card_back, 1);
     });
 });
